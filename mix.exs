@@ -30,6 +30,7 @@ defmodule ComicsScraper.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [{:postgrex, ">= 0.13.3"},
-     {:ecto, "~> 2.1.6"}]
+     {:ecto, "~> 2.1.6"},
+     {:poison, "~> 3.1"}]
   end
 end
