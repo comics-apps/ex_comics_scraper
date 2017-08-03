@@ -15,9 +15,15 @@ defmodule ComicsScraper.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
-    [extra_applications: [:logger, :ecto, :postgrex],
-     mod: {ComicsScraper.Application, []}]
+    [
+      extra_applications: app_list(Mix.env),
+      mod: {ComicsScraper.Application, []}
+    ]
   end
+
+  defp app_list(:dev), do: [:dotenv | app_list()]
+  defp app_list(_), do: app_list()
+  defp app_list, do: [:logger, :ecto, :postgrex]
 
   # Dependencies can be Hex packages:
   #
@@ -29,8 +35,12 @@ defmodule ComicsScraper.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:postgrex, ">= 0.13.3"},
-     {:ecto, "~> 2.1.6"},
-     {:poison, "~> 3.1"}]
+    [
+      {:dotenv, "~> 2.0.0"},
+      {:postgrex, ">= 0.13.3"},
+      {:ecto, "~> 2.1.6"},
+      {:poison, "~> 3.1"},
+      {:marvel_api, git: "https://github.com/comics-apps/ex_marvel_api.git"}
+    ]
   end
 end
