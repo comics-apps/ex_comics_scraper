@@ -11,4 +11,15 @@ defmodule ComicsScraper.ComicVine.Job do
       }
     ]
   end
+
+  def element_attrs(resource, data) do
+    [
+      type: "comic_vine_element",
+      priority: 2,
+      settings: %{
+        collection: resource,
+        id: data["id"]
+      }
+    ]
+  end
 end
