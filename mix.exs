@@ -40,7 +40,8 @@ defmodule ComicsScraper.Mixfile do
       {:postgrex, ">= 0.13.3"},
       {:ecto, "~> 2.1.6"},
       {:poison, "~> 3.1"},
-      {:marvel_api, git: "https://github.com/comics-apps/ex_marvel_api.git"}
+      {:marvel_api, git: "https://github.com/comics-apps/ex_marvel_api.git"},
+      {:comic_vine_api, git: "https://github.com/comics-apps/ex_comic_vine_api.git"}
     ]
   end
 end
