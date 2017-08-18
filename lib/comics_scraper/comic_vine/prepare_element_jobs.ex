@@ -1,5 +1,6 @@
 defmodule ComicsScraper.ComicVine.PrepareElementJobs do
   alias ComicsScraper.ComicVine.ApiModule
+  alias ComicsScraper.ComicVine.Curl
   alias ComicsScraper.Job
   alias ComicsScraper.Repo
 
@@ -11,16 +12,16 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
     180000
   end
 
-  def call do
+  def call(number \\ 0) do
     case find_job() do
       nil ->
         "Nothing to do"
       job ->
         IO.inspect(job)
-        fetch_and_prepare_jobs(job)
+        fetch_and_prepare_jobs(job, number)
         job |> Repo.delete
         :timer.sleep(1000)
-        call()
+        call(number)
     end
   end
 
@@ -32,28 +33,42 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
     query |> Repo.one
   end
 
-  def fetch_and_prepare_jobs(job) do
+  def fetch_and_prepare_jobs(job, number) do
     settings = job.settings
     fetch_and_prepare(settings["collection"], 100, settings["offset"],
-      settings["date"], settings["date_field"])
+      settings["date"], settings["date_field"], number)
   end
 
-  defp base_attrs(limit, offset) do
-    [limit: limit, offset: offset, sort: :id]
+  defp base_attrs(limit, offset, number) do
+    num = number |> Integer.to_string
+    [
+      limit: limit, offset: offset, sort: :id, format: :json,
+      api_key: System.get_env("COMIC_VINE_API_KEY_" <> num),
+      field_list: "id"
+    ]
   end
 
-  def fetch_and_prepare(resource, limit, offset, date, date_field) do
-    response = resource |> fetch_collection(limit, offset, date, date_field)
+  def fetch_and_prepare(resource, limit, offset, date, date_field, number) do
+    response = resource
+      |> fetch_collection(limit, offset, date, date_field, number)
     response["results"] |> Enum.each(fn(data) ->
       resource |> prepare_element_job(data)
     end)
   end
 
-  def fetch_collection(resource, limit, offset, date, date_field) do
+  def fetch_collection(resource, limit, offset, date, date_field, number) do
     extra_attrs = %{date_field => date} |> Map.to_list
-    attrs = merge_if(base_attrs(limit, offset), date, extra_attrs)
-    options = [timeout: timeout(), recv_timeout: timeout()]
-    resource |> String.to_atom |> ApiModule.get |> apply(:all, [attrs, options])
+    attrs = merge_if(base_attrs(limit, offset, number), date, extra_attrs)
+    num = number |> Integer.to_string
+    options = merge_if(
+      [timeout: timeout(), recv_timeout: timeout()],
+      number > 0,
+      [
+        proxy: System.get_env("PROXY_" <> num),
+        proxy_auth: {System.get_env("PROXY_USER"), System.get_env("PROXY_PASSWORD")}
+      ]
+    )
+    resource |> Curl.collection(attrs, options) |> Poison.decode!
   end
 
   defp prepare_element_job(resource, data) do
