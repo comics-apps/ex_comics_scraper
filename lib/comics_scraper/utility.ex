@@ -18,4 +18,12 @@ defmodule ComicsScraper.Utility do
     Regex.scan(~r/.{3}/, filled) |> List.flatten |> Enum.drop(-1)
       |> Enum.join("/")
   end
+
+  def delete_job(job) do
+    try do
+      job |> ComicsScraper.Repo.delete
+    rescue
+      e -> nil
+    end
+  end
 end

@@ -5,7 +5,7 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
   alias ComicsScraper.Repo
 
   import ComicsScraper.ComicVine.Job, only: [element_attrs: 2]
-  import ComicsScraper.Utility, only: [merge_if: 3]
+  import ComicsScraper.Utility, only: [merge_if: 3, delete_job: 1]
   import Ecto.Query
 
   def timeout do
@@ -19,7 +19,7 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
       job ->
         IO.inspect(job)
         fetch_and_prepare_jobs(job, number)
-        job |> Repo.delete
+        job |> delete_job
         :timer.sleep(1000)
         call(number)
     end
@@ -65,7 +65,7 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
       number > 0,
       [
         proxy: System.get_env("PROXY_" <> num),
-        proxy_auth: {System.get_env("PROXY_USER"), System.get_env("PROXY_PASSWORD")}
+        proxy_auth: {System.get_env("PROXY_USER_" <> num), System.get_env("PROXY_PASS_" <> num)}
       ]
     )
     resource |> Curl.collection(attrs, options) |> Poison.decode!

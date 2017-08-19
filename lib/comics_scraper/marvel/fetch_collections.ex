@@ -5,7 +5,7 @@ defmodule ComicsScraper.Marvel.FetchCollections do
 
   import ComicsScraper.Marvel.OrderBy
   import ComicsScraper.Utility,
-    only: [split_array_to_half: 2, merge_if: 3, partition: 1]
+    only: [split_array_to_half: 2, merge_if: 3, partition: 1, delete_job: 1]
   import Ecto.Query
 
   def timeout do
@@ -19,7 +19,7 @@ defmodule ComicsScraper.Marvel.FetchCollections do
       job ->
         IO.inspect(job)
         fetch_and_save_from_job(job)
-        job |> Repo.delete
+        job |> delete_job
         call()
     end
   end
