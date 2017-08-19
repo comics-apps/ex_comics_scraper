@@ -15,6 +15,11 @@ defmodule ComicsScraper.ComicVine.Curl do
   end
 
   def element(resource, id, attributes, options) do
+    fields = field_list(resource)
+    attributes = case fields do
+      "" -> attributes
+      _  -> Enum.concat([field_list: fields], attributes)
+    end
     query_params = URI.encode_query(attributes)
     proxy_options = if options[:proxy] do
       proxy_auth = options[:proxy_auth] |> Tuple.to_list |> Enum.join(":")
@@ -71,5 +76,17 @@ defmodule ComicsScraper.ComicVine.Curl do
       "teams"      -> 4060
       "volumes"    -> 4050
     end
+  end
+
+  defp field_list(resource) do
+    case resource do
+      "movies"     ->
+        [
+          :api_detail_url, :box_office_revenue, :budget, :characters, :concepts, :date_added, :date_last_updated, :deck,
+          :description, :distributor, :id, :image, :locations, :name, :producers, :rating, :release_date, :runtime,
+          :site_detail_url, :studios, :teams, :things, :total_revenue, :writers
+        ]
+      _            -> []
+    end |> Enum.map(fn(x) -> x |> Atom.to_string end) |> Enum.join(",")
   end
 end
