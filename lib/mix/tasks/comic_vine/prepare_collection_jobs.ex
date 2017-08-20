@@ -5,7 +5,6 @@ defmodule Mix.Tasks.ComicVine.PrepareCollectionJobs do
 
   def run(_) do
     Mix.Task.run("app.start")
-    Dotenv.load
     ComicsScraper.ComicVine.PrepareCollectionJobs.call()
   end
 end
