@@ -80,6 +80,13 @@ defmodule ComicsScraper.ComicVine.Curl do
 
   defp field_list(resource) do
     case resource do
+      "characters" ->
+        [
+          :aliases, :api_detail_url, :birth, :character_enemies, :character_friends, :count_of_issue_appearances,
+          :creators, :date_added, :date_last_updated, :deck, :description, :first_appeared_in_issue, :gender, :id,
+          :image, :movies, :name, :origin, :powers, :publisher, :real_name, :site_detail_url, :team_enemies,
+          :team_friends, :teams
+        ]
       "locations"  ->
         [
           :aliases, :api_detail_url, :count_of_isssue_appearances, :date_added, :date_last_updated, :deck, :description,
