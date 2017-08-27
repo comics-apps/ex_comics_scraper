@@ -91,6 +91,10 @@ defmodule ComicsScraper.ComicVine.Curl do
           :description, :distributor, :id, :image, :locations, :name, :producers, :rating, :release_date, :runtime,
           :site_detail_url, :studios, :teams, :things, :total_revenue, :writers
         ]
+      "origins"    ->
+        [
+          :api_detail_url, :id, :name, :profiles, :site_detail_url
+        ]
       _            -> []
     end |> Enum.map(fn(x) -> x |> Atom.to_string end) |> Enum.join(",")
   end
