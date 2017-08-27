@@ -87,6 +87,11 @@ defmodule ComicsScraper.ComicVine.Curl do
           :image, :movies, :name, :origin, :powers, :publisher, :real_name, :site_detail_url, :team_enemies,
           :team_friends, :teams
         ]
+      "concepts"   ->
+        [
+          :aliases, :api_detail_url, :count_of_isssue_appearances, :date_added, :date_last_updated, :deck, :description,
+          :first_appeared_in_issue, :id, :image, :movies, :name, :site_detail_url, :start_year
+        ]
       "locations"  ->
         [
           :aliases, :api_detail_url, :count_of_isssue_appearances, :date_added, :date_last_updated, :deck, :description,
