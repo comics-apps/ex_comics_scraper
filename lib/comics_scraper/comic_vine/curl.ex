@@ -102,6 +102,12 @@ defmodule ComicsScraper.ComicVine.Curl do
         [
           :api_detail_url, :id, :name, :profiles, :site_detail_url
         ]
+      "teams"      ->
+        [
+          :aliases, :api_detail_url, :character_enemies, :character_friends, :characters, :count_of_issue_appearances,
+          :count_of_team_members, :date_added, :date_last_updated, :deck, :description, :first_appeared_in_issue, :id,
+          :image, :movies, :name, :publisher, :site_detail_url
+        ]
       _            -> []
     end |> Enum.map(fn(x) -> x |> Atom.to_string end) |> Enum.join(",")
   end
