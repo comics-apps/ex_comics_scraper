@@ -18,15 +18,15 @@ defmodule ComicsScraper.ComicVine.FetchElements do
         IO.inspect(job)
         try do
           fetch_and_prepare_jobs(job, number)
+          job |> delete_job
+          :timer.sleep(1000)
+          call(number)
         rescue
           e ->
             IO.inspect(e)
             :timer.sleep(1000)
             call(number)
         end
-        job |> delete_job
-        :timer.sleep(1000)
-        call(number)
     end
   end
 
