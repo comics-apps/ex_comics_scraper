@@ -1,6 +1,5 @@
 defmodule ComicsScraper.Marvel.PrepareCollectionJobs do
   alias ComicsScraper.Job
-  alias ComicsScraper.Marvel.ApiModule
   alias ComicsScraper.Repo
 
   import ComicsScraper.Marvel.Job, only: [collection_attrs: 3]
@@ -17,18 +16,20 @@ defmodule ComicsScraper.Marvel.PrepareCollectionJobs do
     pages = 0..round(total_count / 100) |> Enum.to_list
 
     Enum.each(pages, fn (page) ->
-      attributes = collection_attrs(resource, date, page) |> Enum.into(%{})
+      attributes = resource |> collection_attrs(date, page) |> Enum.into(%{})
       %Job{} |> Job.changeset(attributes) |> Repo.insert!
     end)
   end
 
   defp get_total_count(resource, date) do
     attrs = merge_if([limit: 1], date, [modifiedSince: date])
-    response = resource |> ApiModule.get |> apply(:all, [attrs])
+    response = :comics_scraper
+      |> Application.get_env("marvel_api_" <> resource |> String.to_atom)
+      |> apply(:all, [attrs])
     response["data"]["total"]
   end
 
   defp collections do
-    [:characters, :comics, :creators, :events, :series, :stories]
+    Application.get_env(:comics_scraper, :marvel_collections)
   end
 end

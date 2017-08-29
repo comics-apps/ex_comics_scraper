@@ -1,18 +1,17 @@
 defmodule ComicsScraper.Marvel.FetchElement do
-  alias ComicsScraper.Marvel.ApiModule
-
   import ComicsScraper.Utility, only: [partition: 1]
 
   def call(resource, id) do
     response = resource |> fetch_collection(id)
-    IO.inspect(response["code"])
     if response["code"] == 200 do
       create_or_update_data(resource, response["data"]["results"] |> List.first)
     end
   end
 
   defp fetch_collection(resource, id) do
-    resource |> String.to_atom |> ApiModule.get |> apply(:get, [id])
+    :comics_scraper
+      |> Application.get_env("marvel_api_" <> resource |> String.to_atom)
+      |> apply(:get, [id])
   end
 
   defp create_or_update_data(resource, data) do

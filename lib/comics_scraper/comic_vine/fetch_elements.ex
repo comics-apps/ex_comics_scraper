@@ -3,11 +3,12 @@ defmodule ComicsScraper.ComicVine.FetchElements do
   alias ComicsScraper.Job
   alias ComicsScraper.Repo
 
-  import ComicsScraper.Utility, only: [merge_if: 3, partition: 1, delete_job: 1]
+  import ComicsScraper.Utility,
+    only: [merge_if: 3, partition: 1, delete_job: 1]
   import Ecto.Query
 
   def timeout do
-    180000
+    180_000
   end
 
   def call(number \\ 0) do
@@ -15,15 +16,13 @@ defmodule ComicsScraper.ComicVine.FetchElements do
       nil ->
         "Nothing to do"
       job ->
-        IO.inspect(job)
         try do
           fetch_and_prepare_jobs(job, number)
           job |> delete_job
           :timer.sleep(1000)
           call(number)
         rescue
-          e ->
-            IO.inspect(e)
+          _ ->
             :timer.sleep(1000)
             call(number)
         end

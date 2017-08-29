@@ -1,5 +1,4 @@
 defmodule ComicsScraper.ComicVine.PrepareElementJobs do
-  alias ComicsScraper.ComicVine.ApiModule
   alias ComicsScraper.ComicVine.Curl
   alias ComicsScraper.Job
   alias ComicsScraper.Repo
@@ -9,7 +8,7 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
   import Ecto.Query
 
   def timeout do
-    180000
+    180_000
   end
 
   def call(number \\ 0) do
@@ -17,7 +16,6 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
       nil ->
         "Nothing to do"
       job ->
-        IO.inspect(job)
         fetch_and_prepare_jobs(job, number)
         job |> delete_job
         :timer.sleep(1000)
@@ -35,7 +33,7 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
 
   def fetch_and_prepare_jobs(job, number) do
     settings = job.settings
-    fetch_and_prepare(settings["collection"], 100, settings["offset"],
+    fetch_and_prepare(settings["collection"], %{limit: 100, offset: settings["offset"]},
       settings["date"], settings["date_field"], number)
   end
 
@@ -48,17 +46,20 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
     ]
   end
 
-  def fetch_and_prepare(resource, limit, offset, date, date_field, number) do
+  def fetch_and_prepare(resource, options, date, date_field, number) do
     response = resource
-      |> fetch_collection(limit, offset, date, date_field, number)
+      |> fetch_collection(options, date, date_field, number)
     response["results"] |> Enum.each(fn(data) ->
       resource |> prepare_element_job(data)
     end)
   end
 
-  def fetch_collection(resource, limit, offset, date, date_field, number) do
+  def fetch_collection(resource, options, date, date_field, number) do
     extra_attrs = %{date_field => date} |> Map.to_list
-    attrs = merge_if(base_attrs(limit, offset, number), date, extra_attrs)
+    attrs = merge_if(
+      base_attrs(options[:limit], options[:offset], number),
+      date, extra_attrs
+    )
     num = number |> Integer.to_string
     options = merge_if(
       [timeout: timeout(), recv_timeout: timeout()],
@@ -72,7 +73,8 @@ defmodule ComicsScraper.ComicVine.PrepareElementJobs do
   end
 
   defp prepare_element_job(resource, data) do
-    attributes = element_attrs(resource, data)
+    attributes = resource
+      |> element_attrs(data)
       |> Enum.into(%{})
     %Job{} |> Job.changeset(attributes) |> Repo.insert!
   end

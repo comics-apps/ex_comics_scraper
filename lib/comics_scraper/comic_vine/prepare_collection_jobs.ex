@@ -1,9 +1,9 @@
 defmodule ComicsScraper.ComicVine.PrepareCollectionJobs do
-  alias ComicsScraper.ComicVine.ApiModule
   alias ComicsScraper.Job
   alias ComicsScraper.Repo
 
-  import ComicsScraper.ComicVine.Job, only: [collection_attrs: 2, collection_attrs: 4]
+  import ComicsScraper.ComicVine.Job,
+    only: [collection_attrs: 2, collection_attrs: 4]
   import ComicsScraper.Utility, only: [merge_if: 3]
 
   def call(date \\ nil) do
@@ -26,7 +26,7 @@ defmodule ComicsScraper.ComicVine.PrepareCollectionJobs do
     pages = 0..round(total_count / 100) |> Enum.to_list
 
     Enum.each(pages, fn (page) ->
-      attributes = collection_attrs(resource, page) |> Enum.into(%{})
+      attributes = resource |> collection_attrs(page) |> Enum.into(%{})
       %Job{} |> Job.changeset(attributes) |> Repo.insert!
     end)
   end
@@ -36,7 +36,8 @@ defmodule ComicsScraper.ComicVine.PrepareCollectionJobs do
     pages = 0..round(total_count / 100) |> Enum.to_list
 
     Enum.each(pages, fn (page) ->
-      attributes = collection_attrs(resource, page, date, date_field)
+      attributes = resource
+        |> collection_attrs(page, date, date_field)
         |> Enum.into(%{})
       %Job{} |> Job.changeset(attributes) |> Repo.insert!
     end)
@@ -45,15 +46,13 @@ defmodule ComicsScraper.ComicVine.PrepareCollectionJobs do
   defp get_total_count(resource, date \\ nil, date_type \\ nil) do
     extra_attrs = %{date_type => date} |> Map.to_list
     attrs = merge_if([limit: 1], date, extra_attrs)
-    response = resource |> ApiModule.get |> apply(:all, [attrs])
+    response = :comics_scraper
+      |> Application.get_env("cv_api_" <> resource |> String.to_atom)
+      |> apply(:all, [attrs])
     response["number_of_total_results"]
   end
 
   defp collections do
-    [
-      :characters, :concepts, :episodes, :issues, :locations, :movies, :objects,
-      :origins, :people, :powers, :publishers, :series, :story_arcs, :teams,
-      :volumes
-    ]
+    Application.get_env(:comics_scraper, :cv_collections)
   end
 end

@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.ComicVine.PrepareElementJobs do
+  alias ComicsScraper.ComicVine.PrepareElementJobs
+
   use Mix.Task
 
   @shortdoc "Prepare element jobs for ComicVine API"
@@ -6,6 +8,6 @@ defmodule Mix.Tasks.ComicVine.PrepareElementJobs do
   def run(args) do
     Mix.Task.run("app.start")
     number = args |> List.first |> String.to_integer
-    ComicsScraper.ComicVine.PrepareElementJobs.call(number)
+    PrepareElementJobs.call(number)
   end
 end

@@ -1,15 +1,13 @@
 defmodule ComicsScraper.Marvel.FetchCollections do
   alias ComicsScraper.Job
-  alias ComicsScraper.Marvel.ApiModule
   alias ComicsScraper.Repo
 
-  import ComicsScraper.Marvel.OrderBy
   import ComicsScraper.Utility,
     only: [split_array_to_half: 2, merge_if: 3, partition: 1, delete_job: 1]
   import Ecto.Query
 
   def timeout do
-    180000
+    180_000
   end
 
   def call do
@@ -17,7 +15,6 @@ defmodule ComicsScraper.Marvel.FetchCollections do
       nil ->
         "Nothing to do"
       job ->
-        IO.inspect(job)
         fetch_and_save_from_job(job)
         job |> delete_job
         call()
@@ -39,27 +36,28 @@ defmodule ComicsScraper.Marvel.FetchCollections do
   end
 
   def fetch_and_save(resource, limit, offset, date) do
-    try do
-      response = resource |> fetch_collection(limit, offset, date)
-      response["data"]["results"] |> Enum.each(fn(data) ->
-        resource |> create_or_update_data(data)
-      end)
-    rescue
-      e ->
-        IO.inspect(e)
-        handle_exception(resource, limit, offset, date)
-    end
+    response = resource |> fetch_collection(limit, offset, date)
+    response["data"]["results"] |> Enum.each(fn(data) ->
+      resource |> create_or_update_data(data)
+    end)
+  rescue
+    _ ->
+      handle_exception(resource, limit, offset, date)
   end
 
   defp base_attrs(resource, limit, offset) do
-    [limit: limit, offset: offset, orderBy: order_by(resource)]
+    order_by = :comics_scraper
+      |> Application.get_env("marvel_order_by_" <> resource |> String.to_atom)
+    [limit: limit, offset: offset, orderBy: order_by]
   end
 
   defp fetch_collection(resource, limit, offset, date) do
     attrs = merge_if(base_attrs(resource, limit, offset), date,
                      [modifiedSince: date])
     options = [timeout: timeout(), recv_timeout: timeout()]
-    resource |> String.to_atom |> ApiModule.get |> apply(:all, [attrs, options])
+    :comics_scraper
+      |> Application.get_env("marvel_api_" <> resource |> String.to_atom)
+      |> apply(:all, [attrs, options])
   end
 
   def handle_exception(resource, limit, offset, date) do

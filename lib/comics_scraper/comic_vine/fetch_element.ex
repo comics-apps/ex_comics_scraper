@@ -1,12 +1,10 @@
 defmodule ComicsScraper.ComicVine.FetchElement do
   alias ComicsScraper.ComicVine.Curl
-  alias ComicsScraper.Job
-  alias ComicsScraper.Repo
 
   import ComicsScraper.Utility, only: [merge_if: 3, partition: 1]
 
   def timeout do
-    180000
+    180_000
   end
 
   def call(resource, id) do

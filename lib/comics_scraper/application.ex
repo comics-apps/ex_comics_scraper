@@ -10,7 +10,8 @@ defmodule ComicsScraper.Application do
 
     # Define workers and child supervisors to be supervised
     children = [
-      # Starts a worker by calling: ComicsScraper.Worker.start_link(arg1, arg2, arg3)
+      # Starts a worker by calling:
+      #   ComicsScraper.Worker.start_link(arg1, arg2, arg3)
       # worker(ComicsScraper.Worker, [arg1, arg2, arg3]),
       supervisor(ComicsScraper.Repo, [])
     ]

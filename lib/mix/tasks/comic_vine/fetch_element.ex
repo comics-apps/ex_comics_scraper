@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.ComicVine.FetchElement do
+  alias ComicsScraper.ComicVine.FetchElement
+
   use Mix.Task
 
   @shortdoc "Fetch element from ComicVine API"
@@ -7,6 +9,6 @@ defmodule Mix.Tasks.ComicVine.FetchElement do
     Mix.Task.run("app.start")
     resource = args |> List.first
     id = args |> List.last
-    ComicsScraper.ComicVine.FetchElement.call(resource, id)
+    FetchElement.call(resource, id)
   end
 end

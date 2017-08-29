@@ -8,7 +8,11 @@ defmodule ComicsScraper.ComicVine.Curl do
       []
     end
 
-    case System.cmd "curl", proxy_options ++ ["-s", "https://comicvine.gamespot.com/api/" <> resource <> "/?" <> query_params]  do
+    options = [
+      "-s",
+      "https://comicvine.gamespot.com/api/" <> resource <> "/?" <> query_params
+    ]
+    case System.cmd "curl", proxy_options ++ options do
       {output, 0} ->  output
       {err, code} -> {:error, [message: err, code: code]}
     end
@@ -32,7 +36,12 @@ defmodule ComicsScraper.ComicVine.Curl do
     id_prefix = resource |> find_element_id_prefix |> Integer.to_string
     id = id |> Integer.to_string
 
-    case System.cmd "curl", proxy_options ++ ["-s", "https://comicvine.gamespot.com/api/" <> element_resource <> "/" <> id_prefix <> "-" <> id <> "/?" <> query_params]  do
+    options = [
+      "-s",
+      "https://comicvine.gamespot.com/api/" <> element_resource <> "/" <>
+        id_prefix <> "-" <> id <> "/?" <> query_params
+    ]
+    case System.cmd "curl", proxy_options ++ options do
       {output, 0} ->  output
       {err, code} -> {:error, [message: err, code: code]}
     end
@@ -40,80 +49,27 @@ defmodule ComicsScraper.ComicVine.Curl do
 
   defp find_element_resource(resource) do
     case resource do
-      "characters" -> "character"
-      "concepts"   -> "concept"
-      "episodes"   -> "episode"
-      "issues"     -> "issue"
-      "locations"  -> "location"
-      "movies"     -> "movie"
-      "objects"    -> "object"
-      "origins"    -> "origin"
-      "people"     -> "person"
-      "powers"     -> "power"
-      "publishers" -> "publisher"
-      "series"     -> "series"
-      "story_arcs" -> "story_arc"
-      "teams"      -> "team"
-      "volumes"    -> "volume"
+      "series" -> "series"
+      _        -> resource |> Inflex.singularize
     end
   end
 
   defp find_element_id_prefix(resource) do
-    case resource do
-      "characters" -> 4005
-      "concepts"   -> 4015
-      "episodes"   -> 4070
-      "issues"     -> 4000
-      "locations"  -> 4020
-      "movies"     -> 4025
-      "objects"    -> 4055
-      "origins"    -> 4030
-      "people"     -> 4040
-      "powers"     -> 4035
-      "publishers" -> 4010
-      "series"     -> 4075
-      "story_arcs" -> 4045
-      "teams"      -> 4060
-      "volumes"    -> 4050
-    end
+    subkey = "cv_id_prefix_" <> resource |> String.to_atom
+    Application.get_env(:comics_scraper, subkey)
   end
 
   defp field_list(resource) do
-    case resource do
-      "characters" ->
-        [
-          :aliases, :api_detail_url, :birth, :character_enemies, :character_friends, :count_of_issue_appearances,
-          :creators, :date_added, :date_last_updated, :deck, :description, :first_appeared_in_issue, :gender, :id,
-          :image, :movies, :name, :origin, :powers, :publisher, :real_name, :site_detail_url, :team_enemies,
-          :team_friends, :teams
-        ]
-      "concepts"   ->
-        [
-          :aliases, :api_detail_url, :count_of_isssue_appearances, :date_added, :date_last_updated, :deck, :description,
-          :first_appeared_in_issue, :id, :image, :movies, :name, :site_detail_url, :start_year
-        ]
-      "locations"  ->
-        [
-          :aliases, :api_detail_url, :count_of_isssue_appearances, :date_added, :date_last_updated, :deck, :description,
-          :first_appeared_in_issue, :id, :image, :movies, :name, :site_detail_url, :start_year
-        ]
-      "movies"     ->
-        [
-          :api_detail_url, :box_office_revenue, :budget, :characters, :concepts, :date_added, :date_last_updated, :deck,
-          :description, :distributor, :id, :image, :locations, :name, :producers, :rating, :release_date, :runtime,
-          :site_detail_url, :studios, :teams, :things, :total_revenue, :writers
-        ]
-      "origins"    ->
-        [
-          :api_detail_url, :id, :name, :profiles, :site_detail_url
-        ]
-      "teams"      ->
-        [
-          :aliases, :api_detail_url, :character_enemies, :character_friends, :characters, :count_of_issue_appearances,
-          :count_of_team_members, :date_added, :date_last_updated, :deck, :description, :first_appeared_in_issue, :id,
-          :image, :movies, :name, :publisher, :site_detail_url
-        ]
+    field = :comics_scraper
+    fields = case resource do
+      "characters" -> Application.get_env(field, :cv_fields_characters)
+      "concepts"   -> Application.get_env(field, :cv_fields_concepts)
+      "locations"  -> Application.get_env(field, :cv_fields_locations)
+      "movies"     -> Application.get_env(field, :cv_fields_movies)
+      "origins"    -> Application.get_env(field, :cv_fields_origins)
+      "teams"      -> Application.get_env(field, :cv_fields_teams)
       _            -> []
-    end |> Enum.map(fn(x) -> x |> Atom.to_string end) |> Enum.join(",")
+    end
+    fields |> Enum.map(fn(x) -> x |> Atom.to_string end) |> Enum.join(",")
   end
 end
